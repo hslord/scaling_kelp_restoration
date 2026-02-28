@@ -1,30 +1,53 @@
 "use client";
 
 import { useMemo } from "react";
-import { MapContainer, TileLayer, CircleMarker, Tooltip } from "react-leaflet";
-import type { DataPoint, LayerName, LayerState } from "@/types";
+import {
+  MapContainer,
+  TileLayer,
+  CircleMarker,
+  Marker,
+} from "react-leaflet";
+import L from "leaflet";
+import type { DataPoint, LayerName, LayerState, UrchinReport } from "@/types";
 import { interpolateColor } from "@/utils/color";
 import "leaflet/dist/leaflet.css";
 
 interface MapViewProps {
   data: DataPoint[];
   layers: LayerState;
+  urchinReports: UrchinReport[];
+  onPointClick: (point: DataPoint) => void;
 }
 
 const CENTER: [number, number] = [34.5, -120.0];
 const ZOOM = 7;
 const MIN_RADIUS = 3;
-const MAX_RADIUS = 10;
+const MAX_RADIUS = 20;
 const STROKE_WEIGHT = 2.5;
 
-export default function MapView({ data, layers }: MapViewProps) {
+const FLAG_ICON = L.divIcon({
+  html: `<svg xmlns="http://www.w3.org/2000/svg" width="22" height="30" viewBox="0 0 22 30">
+    <line x1="3" y1="2" x2="3" y2="28" stroke="#ffffff" stroke-width="2" stroke-linecap="round"/>
+    <polygon points="3,2 19,7 3,13" fill="#a855f7" stroke="#ffffff" stroke-width="1.2"/>
+    <circle cx="3" cy="28" r="2.5" fill="#a855f7" stroke="#ffffff" stroke-width="1.5"/>
+  </svg>`,
+  className: "",
+  iconSize: [22, 30],
+  iconAnchor: [3, 28],
+});
+
+export default function MapView({
+  data,
+  layers,
+  urchinReports,
+  onPointClick,
+}: MapViewProps) {
   const visibleLayers = useMemo(() => {
     return (Object.entries(layers) as [LayerName, (typeof layers)[LayerName]][])
       .filter(([, config]) => config.visible)
       .reverse();
   }, [layers]);
 
-  // Compute max values from data for normalization
   const maxValues = useMemo(() => {
     const maxes = {
       kelp_biomass_kg_2025: 0,
@@ -39,7 +62,6 @@ export default function MapView({ data, layers }: MapViewProps) {
         if (p[key] > maxes[key]) maxes[key] = p[key];
       }
     }
-    // Ensure no zero divisors
     for (const key of Object.keys(maxes) as (keyof typeof maxes)[]) {
       if (maxes[key] === 0) maxes[key] = 1;
     }
@@ -69,7 +91,9 @@ export default function MapView({ data, layers }: MapViewProps) {
               config.colorHigh,
               normalized
             );
-            const radius = MIN_RADIUS + normalized * (MAX_RADIUS - MIN_RADIUS);
+            const radius = layerName === "priority"
+              ? 4
+              : MIN_RADIUS + normalized * (MAX_RADIUS - MIN_RADIUS);
 
             return (
               <CircleMarker
@@ -83,23 +107,21 @@ export default function MapView({ data, layers }: MapViewProps) {
                   weight: STROKE_WEIGHT,
                   opacity: 1,
                 }}
-              >
-                <Tooltip className="point-tooltip">
-                  <strong>
-                    {point.latitude.toFixed(4)}, {point.longitude.toFixed(4)}
-                  </strong>
-                  Kelp 2025: {point.kelp_biomass_kg_2025.toLocaleString()} kg
-                  <br />
-                  Kelp 2015: {point.kelp_biomass_kg_past_2015.toLocaleString()} kg
-                  <br />
-                  Temp: {point.temperature.toFixed(1)}°C | Salinity: {point.salinity.toFixed(1)}
-                  <br />
-                  Current: {point.ocean_current.toFixed(3)} | Composite: {point.composite_score.toFixed(3)}
-                </Tooltip>
-              </CircleMarker>
+                eventHandlers={{
+                  click: () => onPointClick(point),
+                }}
+              />
             );
           })
         )}
+
+      {urchinReports.map((report) => (
+        <Marker
+          key={report.id}
+          position={[report.latitude, report.longitude]}
+          icon={FLAG_ICON}
+        />
+      ))}
     </MapContainer>
   );
 }

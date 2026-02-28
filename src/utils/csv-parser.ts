@@ -33,7 +33,7 @@ function rowToDataPoint(raw: RawRow): DataPoint | null {
     row["Ocean Current"] ?? row.ocean_current ?? "0"
   );
   const compositeScore = parseFloat(
-    row["Composite Score"] ?? row.composite_score ?? "0"
+    row["Composite Score"] ?? row.compass_score ?? row.composite_score ?? "0"
   );
 
   if (isNaN(lat) || isNaN(lon)) {

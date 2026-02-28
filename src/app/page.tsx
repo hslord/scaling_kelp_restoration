@@ -2,10 +2,13 @@
 
 import { useState, useCallback, useEffect } from "react";
 import dynamic from "next/dynamic";
-import type { DataPoint, LayerName, LayerState } from "@/types";
+import { useQuery, useMutation } from "convex/react";
+import { api } from "../../convex/_generated/api";
+import type { DataPoint, LayerName, LayerState, UrchinReport } from "@/types";
 import { loadSampleCSV } from "@/utils/sample-data";
 import LayerControls from "@/components/LayerControls";
 import Legend from "@/components/Legend";
+import UrchinReportForm from "@/components/UrchinReportForm";
 
 const MapView = dynamic(() => import("@/components/MapView"), { ssr: false });
 
@@ -58,14 +61,35 @@ const DEFAULT_LAYERS: LayerState = {
     visible: false,
     opacity: 0.8,
   },
+  priority: {
+    name: "Priority",
+    field: "composite_score",
+    colorLow: "#1e3a8a",
+    colorHigh: "#ef4444",
+    visible: false,
+    opacity: 0.8,
+  },
 };
 
 export default function Home() {
   const [data, setData] = useState<DataPoint[]>([]);
   const [layers, setLayers] = useState<LayerState>(DEFAULT_LAYERS);
   const [loading, setLoading] = useState(true);
+  const [sidebarOpen, setSidebarOpen] = useState(false);
+  const [selectedPoint, setSelectedPoint] = useState<DataPoint | null>(null);
 
-  // Load the bundled CSV on mount
+  const efforts = useQuery(api.userEfforts.listAllWithDetails) ?? [];
+  const logRemoval = useMutation(api.userEfforts.logRemovalByCoords);
+
+  const urchinReports: UrchinReport[] = efforts.map((e) => ({
+    id: e._id,
+    name: e.userName,
+    latitude: e.latitude,
+    longitude: e.longitude,
+    urchin_count: e.urchins_removed_kg,
+    timestamp: new Date(e.created_at).toISOString(),
+  }));
+
   useEffect(() => {
     loadSampleCSV()
       .then((points) => {
@@ -92,16 +116,37 @@ export default function Home() {
     });
   }, []);
 
-  const setOpacity = useCallback((layer: LayerName, opacity: number) => {
-    setLayers((prev) => ({
-      ...prev,
-      [layer]: { ...prev[layer], opacity },
-    }));
+  const handlePointClick = useCallback((point: DataPoint) => {
+    setSelectedPoint(point);
   }, []);
+
+  const handleReportSubmit = useCallback(
+    async (report: { name: string; email: string; latitude: number; longitude: number; urchin_count: number }) => {
+      await logRemoval({
+        name: report.name,
+        email: report.email,
+        latitude: report.latitude,
+        longitude: report.longitude,
+        urchins_removed_kg: report.urchin_count,
+      });
+      setSelectedPoint(null);
+    },
+    [logRemoval]
+  );
 
   return (
     <div className="app-container">
-      <aside className="sidebar">
+      <button
+        className="sidebar-toggle"
+        onClick={() => setSidebarOpen((v) => !v)}
+        aria-label={sidebarOpen ? "Close sidebar" : "Open sidebar"}
+      >
+        {sidebarOpen ? "\u2715" : "\u2630"}
+      </button>
+      {sidebarOpen && (
+        <div className="sidebar-backdrop" onClick={() => setSidebarOpen(false)} />
+      )}
+      <aside className={`sidebar${sidebarOpen ? " sidebar-open" : ""}`}>
         <div className="sidebar-header">
           <h1>Kelp Restoration Model</h1>
           <p>California Coastline Analysis</p>
@@ -120,7 +165,6 @@ export default function Home() {
               layers={layers}
               onToggle={toggleLayer}
               onSolo={soloLayer}
-              onOpacityChange={setOpacity}
             />
           </div>
 
@@ -146,8 +190,21 @@ export default function Home() {
       </aside>
 
       <main className="map-wrapper">
-        <MapView data={data} layers={layers} />
+        <MapView
+          data={data}
+          layers={layers}
+          urchinReports={urchinReports}
+          onPointClick={handlePointClick}
+        />
       </main>
+
+      {selectedPoint && (
+        <UrchinReportForm
+          point={selectedPoint}
+          onSubmit={handleReportSubmit}
+          onCancel={() => setSelectedPoint(null)}
+        />
+      )}
     </div>
   );
 }

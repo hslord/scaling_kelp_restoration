@@ -9,7 +9,7 @@ export interface DataPoint {
   composite_score: number;
 }
 
-export type LayerName = "current" | "past" | "temperature" | "salinity" | "ocean_current" | "composite_score";
+export type LayerName = "current" | "past" | "temperature" | "salinity" | "ocean_current" | "composite_score" | "priority";
 
 export interface LayerConfig {
   name: string;
@@ -21,3 +21,12 @@ export interface LayerConfig {
 }
 
 export type LayerState = Record<LayerName, LayerConfig>;
+
+export interface UrchinReport {
+  id: string;
+  name: string;
+  latitude: number;
+  longitude: number;
+  urchin_count: number;
+  timestamp: string;
+}

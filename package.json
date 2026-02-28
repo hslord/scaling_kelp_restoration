@@ -6,9 +6,11 @@
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
-    "lint": "next lint"
+    "lint": "next lint",
+    "seed": "tsx scripts/seed.mts"
   },
   "dependencies": {
+    "convex": "^1.32.0",
     "leaflet": "^1.9.4",
     "next": "^14.2.0",
     "papaparse": "^5.4.1",
@@ -22,6 +24,8 @@
     "@types/papaparse": "^5.3.14",
     "@types/react": "^18.3.0",
     "@types/react-dom": "^18.3.0",
+    "dotenv": "^17.3.1",
+    "tsx": "^4.21.0",
     "typescript": "^5.4.0"
   }
 }
