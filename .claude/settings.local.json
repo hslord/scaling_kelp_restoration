@@ -3,7 +3,9 @@
     "allow": [
       "Bash(npm install:*)",
       "Bash(npx next:*)",
-      "Bash(rm:*)"
+      "Bash(rm:*)",
+      "Bash(echo killed:*)",
+      "Bash(chmod +x:*)"
     ]
   }
 }

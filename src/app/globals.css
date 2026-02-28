@@ -114,10 +114,10 @@ body {
   font-weight: 700;
 }
 
-.layer-toggle input[data-layer="kelp"]:checked {
+.layer-toggle input[data-layer="current"]:checked {
   background: var(--accent-kelp);
 }
-.layer-toggle input[data-layer="composite"]:checked {
+.layer-toggle input[data-layer="past"]:checked {
   background: var(--accent-composite);
 }
 

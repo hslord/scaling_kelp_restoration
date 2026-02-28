@@ -24,6 +24,20 @@ export default function MapView({ data, layers }: MapViewProps) {
       .reverse();
   }, [layers]);
 
+  // Compute max values from data for normalization
+  const maxValues = useMemo(() => {
+    let maxCurrent = 0;
+    let maxPast = 0;
+    for (const p of data) {
+      if (p.kelp_biomass_kg > maxCurrent) maxCurrent = p.kelp_biomass_kg;
+      if (p.kelp_biomass_kg_past > maxPast) maxPast = p.kelp_biomass_kg_past;
+    }
+    return {
+      kelp_biomass_kg: maxCurrent || 1,
+      kelp_biomass_kg_past: maxPast || 1,
+    };
+  }, [data]);
+
   return (
     <MapContainer
       center={CENTER}
@@ -39,13 +53,17 @@ export default function MapView({ data, layers }: MapViewProps) {
       {data.length > 0 &&
         visibleLayers.map(([layerName, config]) =>
           data.map((point, i) => {
-            const value = point[config.field] as number;
+            const raw = point[config.field] as number;
+            if (raw === 0) return null;
+
+            const maxVal = maxValues[config.field as keyof typeof maxValues] ?? 1;
+            const normalized = Math.min(raw / maxVal, 1);
             const color = interpolateColor(
               config.colorLow,
               config.colorHigh,
-              value
+              normalized
             );
-            const radius = MIN_RADIUS + value * (MAX_RADIUS - MIN_RADIUS);
+            const radius = MIN_RADIUS + normalized * (MAX_RADIUS - MIN_RADIUS);
 
             return (
               <CircleMarker
@@ -64,9 +82,9 @@ export default function MapView({ data, layers }: MapViewProps) {
                   <strong>
                     {point.latitude.toFixed(4)}, {point.longitude.toFixed(4)}
                   </strong>
-                  Current Kelp: {(point.current_kelp * 100).toFixed(0)}%
+                  Current: {point.kelp_biomass_kg.toLocaleString()} kg
                   <br />
-                  Composite Score: {(point.composite_score * 100).toFixed(0)}%
+                  Past: {point.kelp_biomass_kg_past.toLocaleString()} kg
                 </Tooltip>
               </CircleMarker>
             );

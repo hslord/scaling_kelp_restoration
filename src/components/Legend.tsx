@@ -25,9 +25,9 @@ export default function Legend({ layers }: LegendProps) {
                 }}
               />
               <div className="legend-labels">
-                <span>0%</span>
-                <span>50%</span>
-                <span>100%</span>
+                <span>0 kg</span>
+                <span>Low</span>
+                <span>High</span>
               </div>
             </div>
           )

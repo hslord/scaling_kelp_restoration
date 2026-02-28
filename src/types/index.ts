@@ -1,13 +1,11 @@
 export interface DataPoint {
   latitude: number;
   longitude: number;
-  current_kelp: number;
-  composite_score: number;
+  kelp_biomass_kg: number;
+  kelp_biomass_kg_past: number;
 }
 
-export type LayerName = "kelp" | "composite";
-
-export type TimestampYear = "2004" | "2024";
+export type LayerName = "current" | "past";
 
 export interface LayerConfig {
   name: string;

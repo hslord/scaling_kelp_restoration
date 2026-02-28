@@ -7,8 +7,8 @@ interface LayerControlsProps {
 }
 
 const LAYER_DESCRIPTIONS: Record<LayerName, string> = {
-  kelp: "Current kelp canopy coverage",
-  composite: "Combined restoration suitability",
+  current: "Present-day kelp biomass (kg)",
+  past: "Historical kelp biomass (kg)",
 };
 
 export default function LayerControls({
