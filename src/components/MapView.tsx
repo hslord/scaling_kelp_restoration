@@ -13,8 +13,8 @@ interface MapViewProps {
 
 const CENTER: [number, number] = [34.5, -120.0];
 const ZOOM = 7;
-const MIN_RADIUS = 4;
-const MAX_RADIUS = 18;
+const MIN_RADIUS = 3;
+const MAX_RADIUS = 10;
 const STROKE_WEIGHT = 2.5;
 
 export default function MapView({ data, layers }: MapViewProps) {
@@ -26,16 +26,24 @@ export default function MapView({ data, layers }: MapViewProps) {
 
   // Compute max values from data for normalization
   const maxValues = useMemo(() => {
-    let maxCurrent = 0;
-    let maxPast = 0;
-    for (const p of data) {
-      if (p.kelp_biomass_kg > maxCurrent) maxCurrent = p.kelp_biomass_kg;
-      if (p.kelp_biomass_kg_past > maxPast) maxPast = p.kelp_biomass_kg_past;
-    }
-    return {
-      kelp_biomass_kg: maxCurrent || 1,
-      kelp_biomass_kg_past: maxPast || 1,
+    const maxes = {
+      kelp_biomass_kg_2025: 0,
+      kelp_biomass_kg_past_2015: 0,
+      temperature: 0,
+      salinity: 0,
+      ocean_current: 0,
+      composite_score: 0,
     };
+    for (const p of data) {
+      for (const key of Object.keys(maxes) as (keyof typeof maxes)[]) {
+        if (p[key] > maxes[key]) maxes[key] = p[key];
+      }
+    }
+    // Ensure no zero divisors
+    for (const key of Object.keys(maxes) as (keyof typeof maxes)[]) {
+      if (maxes[key] === 0) maxes[key] = 1;
+    }
+    return maxes;
   }, [data]);
 
   return (
@@ -54,8 +62,6 @@ export default function MapView({ data, layers }: MapViewProps) {
         visibleLayers.map(([layerName, config]) =>
           data.map((point, i) => {
             const raw = point[config.field] as number;
-            if (raw === 0) return null;
-
             const maxVal = maxValues[config.field as keyof typeof maxValues] ?? 1;
             const normalized = Math.min(raw / maxVal, 1);
             const color = interpolateColor(
@@ -82,9 +88,13 @@ export default function MapView({ data, layers }: MapViewProps) {
                   <strong>
                     {point.latitude.toFixed(4)}, {point.longitude.toFixed(4)}
                   </strong>
-                  Current: {point.kelp_biomass_kg.toLocaleString()} kg
+                  Kelp 2025: {point.kelp_biomass_kg_2025.toLocaleString()} kg
                   <br />
-                  Past: {point.kelp_biomass_kg_past.toLocaleString()} kg
+                  Kelp 2015: {point.kelp_biomass_kg_past_2015.toLocaleString()} kg
+                  <br />
+                  Temp: {point.temperature.toFixed(1)}°C | Salinity: {point.salinity.toFixed(1)}
+                  <br />
+                  Current: {point.ocean_current.toFixed(3)} | Composite: {point.composite_score.toFixed(3)}
                 </Tooltip>
               </CircleMarker>
             );

@@ -45,7 +45,7 @@ export default function CSVUploader({ onUpload }: CSVUploaderProps) {
         <div className="upload-icon">+</div>
         <p>Drop CSV file here or click to browse</p>
         <p className="upload-hint">
-          Columns: lat, lon, kelp_biomass_kg, kelp_biomass_kg_past
+          Columns: latitude, longitude, kelp_biomass_kg_2025, kelp_biomass_kg_past_2015
         </p>
       </div>
       <input

@@ -5,7 +5,8 @@
       "Bash(npx next:*)",
       "Bash(rm:*)",
       "Bash(echo killed:*)",
-      "Bash(chmod +x:*)"
+      "Bash(chmod +x:*)",
+      "Bash(rm -rf .next && npm run build 2>&1)"
     ]
   }
 }

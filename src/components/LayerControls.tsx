@@ -3,17 +3,23 @@ import type { LayerName, LayerState } from "@/types";
 interface LayerControlsProps {
   layers: LayerState;
   onToggle: (layer: LayerName) => void;
+  onSolo: (layer: LayerName) => void;
   onOpacityChange: (layer: LayerName, opacity: number) => void;
 }
 
 const LAYER_DESCRIPTIONS: Record<LayerName, string> = {
-  current: "Present-day kelp biomass (kg)",
-  past: "Historical kelp biomass (kg)",
+  current: "2025 kelp biomass (kg)",
+  past: "2015 kelp biomass (kg)",
+  temperature: "Sea surface temperature (\u00B0C)",
+  salinity: "Salinity level",
+  ocean_current: "Ocean current speed",
+  composite_score: "Composite restoration score",
 };
 
 export default function LayerControls({
   layers,
   onToggle,
+  onSolo,
   onOpacityChange,
 }: LayerControlsProps) {
   return (
@@ -28,7 +34,15 @@ export default function LayerControls({
               data-layer={key}
             />
             <div className="layer-info">
-              <div className="layer-name">{config.name}</div>
+              <div className="layer-name-row">
+                <span className="layer-name">{config.name}</span>
+                <button
+                  className="btn-only"
+                  onClick={() => onSolo(key)}
+                >
+                  only
+                </button>
+              </div>
               <div className="layer-desc">{LAYER_DESCRIPTIONS[key]}</div>
               <div className="opacity-control">
                 <label>Opacity</label>

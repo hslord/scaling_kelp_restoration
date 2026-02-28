@@ -40,12 +40,18 @@ body {
   border-right: 1px solid var(--border-color);
   display: flex;
   flex-direction: column;
-  overflow-y: auto;
+  overflow: hidden;
 }
 
 .sidebar-header {
   padding: 20px;
   border-bottom: 1px solid var(--border-color);
+  flex-shrink: 0;
+}
+
+.sidebar-scroll {
+  flex: 1;
+  overflow-y: auto;
 }
 
 .sidebar-header h1 {
@@ -120,14 +126,52 @@ body {
 .layer-toggle input[data-layer="past"]:checked {
   background: var(--accent-composite);
 }
+.layer-toggle input[data-layer="temperature"]:checked {
+  background: #ef4444;
+}
+.layer-toggle input[data-layer="salinity"]:checked {
+  background: #38bdf8;
+}
+.layer-toggle input[data-layer="ocean_current"]:checked {
+  background: #a78bfa;
+}
+.layer-toggle input[data-layer="composite_score"]:checked {
+  background: #ec4899;
+}
 
 .layer-info {
   flex: 1;
 }
 
+.layer-name-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
 .layer-name {
   font-size: 13px;
   font-weight: 500;
+}
+
+.btn-only {
+  font-size: 9px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--text-secondary);
+  background: transparent;
+  border: 1px solid var(--border-color);
+  border-radius: 4px;
+  padding: 2px 6px;
+  cursor: pointer;
+  transition: color 0.15s, border-color 0.15s, background 0.15s;
+}
+
+.btn-only:hover {
+  color: var(--text-primary);
+  border-color: var(--text-secondary);
+  background: var(--bg-tertiary);
 }
 
 .layer-desc {
