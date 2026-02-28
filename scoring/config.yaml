@@ -1,0 +1,16 @@
+INPUT_CSV: "Final-Kelper-Input_filled.csv"
+
+# Kelp compass score weights
+W_PAST: 0.0
+W_CURR_OPP: 0.35
+W_TEMP: 0.35
+W_SAL: 0.15
+W_CURR: 0.15
+
+# Means and SDs for normalizing to [0, 1]
+TEMP_MEAN: 14.5
+TEMP_SD: 3.0
+SAL_MEAN: 34.5
+SAL_SD: 1.0
+CURR_MEAN: 0.2
+CURR_SD: 0.05
